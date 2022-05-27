@@ -19,15 +19,13 @@ PVOID Syscall(const char* syscall_name, Args ... args)
             system_idx = current_pair.second;
 
     //Allocate memory for our shellcode
-    uint64_t syscall = (uint64_t)VirtualAlloc(0, sizeof(syscall_name), MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    uint64_t syscall = reinterpret_cast<uint64_t>(VirtualAlloc(0, sizeof(syscall_shellcode), MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE));
     //Copy our shellcode to the allocated memory
-    memcpy((void*)syscall, syscall_shellcode, sizeof(syscall_shellcode));
+    memcpy((PVOID)syscall, syscall_shellcode, sizeof(syscall_shellcode));
     //Write the syscall index to the shellcode
-    *(uint32_t*)(syscall + 0x4) = system_idx;
-
+    *reinterpret_cast<uint32_t*>(syscall + 0x4) = system_idx;
     //Cast our function before we call it
     T syscall_function = (T)syscall;
-
     //Call the function and return the values
     return (PVOID)syscall_function(args...);
 
